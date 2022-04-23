@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://kit.fontawesome.com/43d9f158ac.js" crossorigin="anonymous"></script>
+  {% block head %}
+  <meta charset="utf-8">
+  <title>Puzzle Center</title>
+  <link rel="stylesheet" href="..\static\global.css" />
+  {% endblock %}
+</head>
+<body>
+  <div id="content">
+    <div id="spacing">
+      <header>
+      <nav>
+        <h1>
+          Puzzle Center
+        </h1>
+        <a class="link" href="/">
+          <div class="linkLetter">H</div>ome
+        </a>
+        <a class="link" href="/wordle">
+          <div class="linkLetter">W</div>ordle
+        </a>
+        <a class="link" href="/wordlevbot">
+          <div class="linkLetter">V</div>s Bot
+        </a>
+        <a class="link" href="/wordlehard">
+          <div class="linkLetter">H</div>ard Wordle
+        </a>
+      </nav>
+      </header>
+      {% block content %}{% endblock %}
+    </div>
+  <footer>
+    Ian Wyse-2022
+  <footer>
+  </div>
+</body>

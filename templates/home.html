@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+  {% block content %}
+  <div class="homeTile" onClick="window.location.href='./wordle'">
+    <div class = "inline_question">
+      <i class="fa-solid fa-circle-question"></i>
+      <span class="info">
+        An incredibly easy to use Wordle solver. If you can't think of a word
+        for your next guess, or simply want to impress your friends with how fast you can solve today's Wordle,
+        this solver is what you need. Just enter your words, select which guesses you have already gotten right,
+        and press enter to recieve our algorithm's choice of best next word to get your Wordle solved.
+      </span>
+    </div>
+    <h2 class="tileTitle">
+      Wordle Solver
+    <h2>
+    <img src="./static/wordle.png" class="tileImg" />
+  </div>
+  <div class="homeTile" onClick="window.location.href='./wordlevbot'">
+    <div class = "inline_question">
+      <i class="fa-solid fa-circle-question"></i>
+      <span class="info">
+        Test your Wordle might against our Wordle bot. Solve a randomly generated
+        Wordle game in as few guesses as possible, but make sure to choose your words well, because our Wordle algorithm is
+        solving right beside you! Try to get to the answer before the bot does, or compare your strategy with its after you find your word.
+        Good for the ultra-competative, or those trying to hone their Wordle tactics by seeing how the bot gets it done.
+      </span>
+    </div>
+    <h2 class="tileTitle">
+      Challenge the Bot
+    <h2>
+    <img src="./static/wordlecomp.png" class="tileImg" />
+  </div>
+  <div class="homeTile" onClick="window.location.href='./wordlehard'">
+    <div class = "inline_question">
+      <i class="fa-solid fa-circle-question"></i>
+      <span class="info">
+        A Wordle game mode not for the faint of heart. This mode works just like the original, but each
+        solution word is one of the over 12,000 five letter words in the offical Scrabble dictionary.
+        With possible words like "aahed", "blays", and "zoeae", this challenging mode may leave you
+        stumped. 
+      </span>
+    </div>
+    <h2 class="tileTitle">
+      Hard Mode Wordle
+    <h2>
+    <img src="./static/wordlehard.png" class="tileImg" />
+  </div>
+  {% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+  {% block content %}
+  <div class=wordleBox>
+    <table id="sudokuBoard">
+    </table>
+  </div>
+
+  <script>
+    let sudokuTable = [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
+
+    let activeCell = null;
+
+    function makeSudokuTable(table) {
+      const sudoBoard = document.getElementById("sudokuBoard");
+      for (let row of table) {
+        let sudoRow = document.createElement("tr");
+        for (let column of row) {
+          let cell = document.createElement("td");
+          if (column === 0){cell.innerText = ""}
+          else {cell.innerText = column}
+          cell.addEventListener("click", manageClick)
+          sudoRow.appendChild(cell)
+        }
+        sudoBoard.appendChild(sudoRow)
+      }
+    }
+
+    function manageClick(event) {
+      event.stopPropagation()
+      setActiveCell(event.target)
+      document.addEventListener("keydown", updateCell)
+    }
+
+    function setActiveCell(cell) {
+      console.log("test")
+      if (activeCell !== null) {
+        activeCell.style.backgroundColor = "rgb(58,58,60)";
+      }
+      activeCell = cell
+      activeCell.style.backgroundColor = "#b59f3b"
+    }
+
+    function updateCell(number) {
+      if ("123456789".includes(number.key)) {
+        activeCell.innerText = number.key
+        activeCell.style.backgroundColor = "#538d4e"
+      }
+      else if (number.key === "Backspace") {
+        activeCell.innerText = ""
+      }
+    }
+
+    function clearFocus(event) {
+      activeCell.style.backgroundColor = "rgb(58,58,60)"
+      activeCell = null
+    }
+
+    document.body.addEventListener("click", clearFocus)
+    makeSudokuTable(sudokuTable)
+  </script>
+  {% endblock %}

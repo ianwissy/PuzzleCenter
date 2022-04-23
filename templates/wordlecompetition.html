@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+  {% block content %}
+  <div class=wordleBox>
+    <table class="Wordletable" id="Usertable">
+    </table>
+    <table class="Wordletable" id="Bottable">
+    </table>
+  </div>
+  <div class = "question">
+    <i class="fa-solid fa-circle-question fa-xl"></i>
+    <span class="info">
+      This works just like normal Wordle! Enter your guess, (it will appear on the left Wordle board), then press enter to
+      see how close you are. The difference is that the bot will be guessing along
+      side you. You can't see its guesses, but you can see how close it is getting
+      by how many of its squares on the right Wordle board are green and yellow. When you complete your wordle,
+      you will be able to see what words the bot picked and compare your strategies.
+    </span>
+  </div>
+  <div class = keyboardBox>
+    <table class = keyboardTable>
+      <tr>
+        <td id = "Q"> Q </td> <td id = "W"> W </td> <td id = "E"> E </td>
+        <td id = "R"> R </td> <td id = "T"> T </td> <td id = "Y"> Y </td>
+        <td id = "U"> U </td> <td id = "I"> I </td> <td id = "O"> O </td>
+        <td id = "P"> P </td>
+      </tr>
+    </table>
+    <table class = keyboardTable>
+      <tr>
+        <td id = "A"> A </td> <td id = "S"> S </td> <td id = "D"> D </td>
+        <td id = "F"> F </td> <td id = "G"> G </td> <td id = "H"> H </td>
+        <td id = "J"> J </td> <td id = "K"> K </td> <td id = "L"> L </td>
+      </tr>
+    </table>
+    <table class = keyboardTable>
+      <tr>
+        <td id = "Z"> Z </td> <td id = "X"> X </td> <td id = "C"> C </td>
+        <td id = "V"> V </td> <td id = "B"> B </td> <td id = "N"> N </td>
+        <td id = "M"> M </td>
+      </tr>
+    </table>
+  </div>
+  <script>
+    const words = [["","","","",""],["","","","",""],["","","","",""],["","","","",""],["","","","",""],["","","","",""]];
+    const botwords = [["","","","",""],["","","","",""],["","","","",""],["","","","",""],["","","","",""],["","","","",""]];
+    const botconditions = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
+    const alphabet = "abcdefghijklmnopqrstuvwxyvABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const indexPair = [0,0];
+    const winPair = [0,0];
+    const win_inx = Math.floor(Math.random() * 100000);
+
+    function makeTable(words, table) {
+      const wordTable = document.getElementById(table);
+      for (let wordArray of words) {
+        let word = document.createElement("tr");
+        for (let character of wordArray ) {
+          let letter = document.createElement("td");
+          letter.innerText = character;
+          letter.style.backgroundColor="#3a3a3c"
+          letter.setAttribute("class","wordlesquare")
+          word.appendChild(letter)
+        }
+        wordTable.appendChild(word)
+      }
+    }
+
+    makeTable(words, "Usertable")
+    makeTable(botwords, "Bottable")
+
+    document.body.addEventListener('keydown', keyPressListener);
+
+    function keyPressListener(event) {
+      updateWords(event.key)
+    };
+
+    function updateWords(key){
+      if (winPair[0] === 0){
+        if (alphabet.includes(key)){
+          if (indexPair[0] !== 5) {
+            words[indexPair[1]][indexPair[0]] = key.toUpperCase()
+            indexPair[0] = indexPair[0] + 1
+          }
+        }
+        else if (key === "Backspace") {
+          if (indexPair[0] !== 0){
+            indexPair[0] = indexPair[0] - 1
+            words[indexPair[1]][indexPair[0]] = ""
+          }
+        }
+        else if (key === "Enter") {
+          nextTurn()
+        }
+        updateTable("Usertable", words)
+      }
+    };
+
+    function updateTable(table, word_list) {
+      const wordTable = document.getElementById(table);
+      for (let i in word_list) {
+        for (let j in word_list[i]){
+          cell = wordTable.rows[i].cells[j]
+          cell.innerText = word_list[i][j]
+        }
+      }
+    };
+
+    async function requestConditionsFromServer(word) {
+      const response = await fetch("/wordlenextturn", {
+        method:"POST",
+        headers:{'Content-Type': 'application/json' },
+        body: JSON.stringify({word, win_inx, botwords, botconditions})
+      })
+      return response
+    };
+
+    async function nextTurn() {
+      word = words[indexPair[1]]
+      requestConditionsFromServer(word)
+      .then(res => res.json())
+      .then(response => {
+        if (response !== false){
+          if (winPair[1] === 0) {
+            update_bot(response[1], response[2])}
+          colorSquares(response[0], "Usertable")
+          colorKeyboard(response[0], word)
+          indexPair[1] += 1
+          indexPair[0] = 0
+          if (response[0].toString() === "2,2,2,2,2"){
+            winPair[0] = 1
+            updateTable("Bottable", botwords)
+          }
+        }
+      })
+    }
+
+    function colorSquares(conditions, table){
+      for (let i in conditions){
+        if (conditions[i] === 0){
+          document.getElementById(table).rows[indexPair[1]].cells[i].style.backgroundColor="#3a3a3c"
+        }
+        else if (conditions[i] === 1){
+          document.getElementById(table).rows[indexPair[1]].cells[i].style.backgroundColor="#b59f3b"
+        }
+        else if (conditions[i] === 2){
+          document.getElementById(table).rows[indexPair[1]].cells[i].style.backgroundColor="#538d4e"
+        }
+      }
+    }
+
+    function update_bot(word, conditions){
+      word = word.toUpperCase()
+      for (let i in word){
+        botwords[indexPair[1]][i] = word[i]
+        botconditions[indexPair[1]][i] = conditions[i]
+        colorSquares(conditions, "Bottable")
+        if (conditions.toString() === "2,2,2,2,2") {
+          winPair[1] = 1
+        }
+      }
+    }
+
+    function colorKeyboard(conditions, word){
+      for (let i in word){
+        if (conditions[i] === 0){
+          document.getElementById(word[i]).style.backgroundColor="#3a3a3c"
+        }
+        else if (conditions[i] === 1){
+          document.getElementById(word[i]).style.backgroundColor="#b59f3b"
+        }
+        else if (conditions[i] === 2){
+          document.getElementById(word[i]).style.backgroundColor="#538d4e"
+        }
+      }
+    }
+
+  </script>
+  {% endblock %}

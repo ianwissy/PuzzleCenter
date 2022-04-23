@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+  {% block content %}
+  <div class=wordleBox>
+    <table id="Wordletable" class="Wordletable">
+    </table>
+  </div>
+  <div class = "question">
+    <i class="fa-solid fa-circle-question fa-xl"></i>
+    <span class="info">
+      Type your current words and they will appear in the Wordle board. If you make an error, just hit backspace to delete letters you have entered.
+      Once your words are entered, click on the individual letters to change their color until they match what you see on your board. Then press enter to
+      recieve our choice for best next word. This word will appear in the row below your entries. If no word appears, it means your entries have eliminated
+      all possible choices for next word. If this occurs, check your entries for typos and missclicks. 
+    </span>
+  </div>
+  <script>
+
+    const words = [["","","","",""],["","","","",""],["","","","",""],["","","","",""],["","","","",""],["","","","",""]];
+    const indexPair = [0,0]
+    const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    function makeTable(words) {
+      const wordTable = document.getElementById("Wordletable");
+      for (let wordArray of words) {
+        let word = document.createElement("tr");
+        for (let character of wordArray ) {
+          let letter = document.createElement("td");
+          letter.innerText = character;
+          letter.style.backgroundColor="#3a3a3c"
+          letter.addEventListener("click", updateColor)
+          letter.setAttribute("class","wordlesquare")
+          word.appendChild(letter)
+        }
+        wordTable.appendChild(word)
+      }
+    }
+
+    makeTable(words)
+
+    function updateTable() {
+      const wordTable = document.getElementById("Wordletable");
+      for (let i in words) {
+        for (let j in words[i]){
+          cell = document.getElementById("Wordletable").rows[i].cells[j]
+          cell.innerText = words[i][j]
+          if (cell.innerText === ""){
+            cell.style.backgroundColor="rgb(58, 58, 60)"
+          }
+        }
+      }
+    }
+
+    function keyPressListener(event) {
+      updateWords(event.key)
+    };
+
+    function updateWords(key){
+      if (alphabet.includes(key)){
+        if (words[5][4] !== undefined) {
+          words[indexPair[1]][indexPair[0]] = key.toUpperCase()
+          indexPair[1] = indexPair[1] + (indexPair[0] === 4)
+          indexPair[0] = (indexPair[0] + 1) % 5
+        }
+      }
+      else if (key === "Backspace") {
+        if (indexPair[0] !== 0 || indexPair[1] !== 0){
+          indexPair[1] = indexPair[1] - (indexPair[0] === 0)
+          indexPair[0] = (indexPair[0] + 4) % 5
+          words[indexPair[1]][indexPair[0]] = ""
+        }
+      }
+      else if (key === "Enter") {
+        getNextWord()
+      }
+      updateTable(words)
+    };
+
+    document.body.addEventListener('keydown', keyPressListener);
+
+    function updateColor(event) {
+      let letter = event.target
+      if(letter.innerText !==""){
+        if(letter.style.backgroundColor==="rgb(58, 58, 60)"){
+          letter.style.backgroundColor="#b59f3b"
+        }
+        else if(letter.style.backgroundColor==="rgb(181, 159, 59)"){
+          letter.style.backgroundColor="#538d4e"
+        }
+        else if(letter.style.backgroundColor==="rgb(83, 141, 78)"){
+          letter.style.backgroundColor="#3a3a3c"
+        }
+      }
+    };
+
+    function getConditions() {
+       const conditions = [[],[],[],[],[],[]]
+       for (let i in words) {
+         for (let j in words[i]){
+           if (document.getElementById("Wordletable").rows[i].cells[j].style.backgroundColor==="rgb(58, 58, 60)"){
+             conditions[i].push(0)
+           }
+           else if (document.getElementById("Wordletable").rows[i].cells[j].style.backgroundColor==="rgb(181, 159, 59)"){
+             conditions[i].push(1)
+           }
+           else {
+             conditions[i].push(2)
+           }
+          }
+        }
+        return conditions
+     };
+
+    function sanitizeEntry() {
+       for (let word of words){
+         if (word[word.length - 1] === "") {
+           indexPair[0] = 0
+           for (let i in word) {
+             word[i] = ""
+           }
+          }
+        }
+     };
+
+    async function requestWordFromServer() {
+      const response = await fetch("./wordlesolve", {
+        method:"POST",
+        headers:{'Content-Type': 'application/json' },
+        body: JSON.stringify({words, conditions})
+      })
+      return response
+    };
+
+    async function getNextWord() {
+      conditions = getConditions()
+      sanitizeEntry()
+      requestWordFromServer()
+      .then(res => res.json())
+      .then(response => {
+        for (char of response){
+          updateWords(char)
+        }
+      })
+    };
+  </script>
+  {% endblock %}
